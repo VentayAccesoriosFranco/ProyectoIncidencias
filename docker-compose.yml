@@ -1,0 +1,17 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: incidencias_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: incidencias_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: antonio-16251
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
