@@ -3,3 +3,5 @@ Flask-SQLAlchemy
 psycopg
 Flask-Cors
 python-dotenv
+PyJWT[crypto]
+requests

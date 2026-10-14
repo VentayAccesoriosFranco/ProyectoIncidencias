@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes e Incidencias</title>
-    <link rel="stylesheet" href="css/estilos.css">
+    <link rel="stylesheet" href="CSS/estilos.css">
 </head>
 <body>
 
@@ -15,20 +16,33 @@
 
     <main>
         <section>
+            <h2>Autenticación con Keycloak</h2>
+
+            <p id="estadoSesion">Comprobando sesión...</p>
+
+            <button id="btnLogin" onclick="iniciarSesion()">
+                Iniciar sesión
+            </button>
+
+            <button id="btnLogout" onclick="cerrarSesion()" hidden>
+                Cerrar sesión
+            </button>
+
+            <h3>Información del usuario</h3>
+            <div id="informacionUsuario"></div>
+
+            <hr>
+
             <h2>Estado del sistema</h2>
 
-            <button onclick="probarUsuarios()">
-                Probar API Usuarios
-            </button>
-
-            <button onclick="probarIncidencias()">
-                Probar API Incidencias
-            </button>
+            <button onclick="probarUsuarios()">Probar API Usuarios</button>
+            <button onclick="probarIncidencias()">Probar API Incidencias</button>
+            <button onclick="probarActualizarIncidencia()">Actualizar incidencia de prueba</button>
 
             <div id="resultado"></div>
         </section>
     </main>
 
-    <script src="js/app.js"></script>
+    <script type="module" src="JS/app.js"></script>
 </body>
 </html>

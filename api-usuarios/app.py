@@ -2,7 +2,9 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from dotenv import load_dotenv
+from seguridad import requiere_autenticacion
 import os
+
 
 load_dotenv()
 
@@ -36,6 +38,7 @@ def inicio():
 
 
 @app.route("/api/usuarios", methods=["GET"])
+@requiere_autenticacion(roles=["administrador"])
 def obtener_usuarios():
     usuarios = Usuario.query.all()
 
@@ -53,6 +56,7 @@ def obtener_usuarios():
 
 
 @app.route("/api/usuarios", methods=["POST"])
+@requiere_autenticacion(roles=["administrador"])
 def crear_usuario():
     datos = request.get_json()
 

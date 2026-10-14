@@ -2,12 +2,22 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from dotenv import load_dotenv
+from seguridad import requiere_autenticacion
 import os
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": ["http://127.0.0.1:5500"],
+            "allow_headers": ["Authorization", "Content-Type"],
+            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+        }
+    }
+)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -41,6 +51,7 @@ def inicio():
 
 
 @app.route("/api/incidencias", methods=["GET"])
+@requiere_autenticacion(roles=["usuario", "administrador"])
 def obtener_incidencias():
     incidencias = Incidencia.query.all()
 
@@ -63,6 +74,7 @@ def obtener_incidencias():
 
 
 @app.route("/api/incidencias", methods=["POST"])
+@requiere_autenticacion(roles=["usuario", "administrador"])
 def crear_incidencia():
     datos = request.get_json()
 
@@ -84,6 +96,68 @@ def crear_incidencia():
         "mensaje": "Incidencia creada correctamente",
         "id": incidencia.id
     }), 201
+
+@app.route("/api/incidencias/<int:id>", methods=["PATCH"])
+@requiere_autenticacion(roles=["administrador"])
+def actualizar_incidencia(id):
+    incidencia = db.session.get(Incidencia, id)
+
+    if incidencia is None:
+        return jsonify({
+            "error": "La incidencia no existe"
+        }), 404
+
+    datos = request.get_json(silent=True)
+
+    if not isinstance(datos, dict):
+        return jsonify({
+            "error": "Debes enviar datos en formato JSON"
+        }), 400
+
+    if not datos:
+        return jsonify({
+            "error": "Debes indicar al menos un campo para actualizar"
+        }), 400
+
+    campos_permitidos = {"estado", "prioridad"}
+
+    if not set(datos).issubset(campos_permitidos):
+        return jsonify({
+            "error": "Solo se permite actualizar estado y prioridad"
+        }), 400
+
+    estados_validos = ["Pendiente", "En proceso", "Resuelto"]
+    prioridades_validas = ["Baja", "Media", "Alta"]
+
+    if "estado" in datos:
+        if datos["estado"] not in estados_validos:
+            return jsonify({
+                "error": "Estado no válido",
+                "estados_permitidos": estados_validos
+            }), 400
+
+        incidencia.estado = datos["estado"]
+
+    if "prioridad" in datos:
+        if datos["prioridad"] not in prioridades_validas:
+            return jsonify({
+                "error": "Prioridad no válida",
+                "prioridades_permitidas": prioridades_validas
+            }), 400
+
+        incidencia.prioridad = datos["prioridad"]
+
+    db.session.commit()
+
+    return jsonify({
+        "mensaje": "Incidencia actualizada correctamente",
+        "incidencia": {
+            "id": incidencia.id,
+            "titulo": incidencia.titulo,
+            "estado": incidencia.estado,
+            "prioridad": incidencia.prioridad
+        }
+    }), 200
 
 
 if __name__ == "__main__":
