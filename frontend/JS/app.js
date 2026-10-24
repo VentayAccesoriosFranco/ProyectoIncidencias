@@ -6,6 +6,8 @@ import {
     obtenerKeycloak
 } from "./keycloak.js";
 
+const API_URL = "http://localhost:8081";
+
 window.iniciarSesion = iniciarSesion;
 window.cerrarSesion = cerrarSesion;
 
@@ -45,7 +47,6 @@ async function iniciarAplicacion() {
     }
 }
 
-
 window.probarUsuarios = async function () {
     const resultado = document.getElementById("resultado");
     const keycloak = obtenerKeycloak();
@@ -60,7 +61,7 @@ window.probarUsuarios = async function () {
         await keycloak.updateToken(30);
 
         const respuesta = await fetch(
-            "http://localhost:5001/api/usuarios",
+            `${API_URL}/api/usuarios`,
             {
                 method: "GET",
                 headers: {
@@ -97,12 +98,9 @@ window.probarUsuarios = async function () {
         console.error("Error API Usuarios:", error);
 
         resultado.textContent =
-            "No fue posible conectar con API Usuarios. " +
-            "Revisa que Flask esté ejecutándose.";
+            "No fue posible conectar con API Usuarios a través de Nginx.";
     }
 };
-
-
 
 window.probarIncidencias = async function () {
     const resultado = document.getElementById("resultado");
@@ -118,7 +116,7 @@ window.probarIncidencias = async function () {
         await keycloak.updateToken(30);
 
         const respuesta = await fetch(
-            "http://localhost:5002/api/incidencias",
+            `${API_URL}/api/incidencias`,
             {
                 method: "GET",
                 headers: {
@@ -155,8 +153,7 @@ window.probarIncidencias = async function () {
         console.error("Error API Incidencias:", error);
 
         resultado.textContent =
-            "No fue posible conectar con API Incidencias. " +
-            "Comprueba que Flask esté ejecutándose en el puerto 5002.";
+            "No fue posible conectar con API Incidencias a través de Nginx.";
     }
 };
 
@@ -173,7 +170,7 @@ window.probarActualizarIncidencia = async function () {
         await keycloak.updateToken(30);
 
         const respuesta = await fetch(
-            "http://localhost:5002/api/incidencias/1",
+            `${API_URL}/api/incidencias/1`,
             {
                 method: "PATCH",
                 headers: {
@@ -194,11 +191,11 @@ window.probarActualizarIncidencia = async function () {
             JSON.stringify(datos, null, 2);
 
     } catch (error) {
-        console.error(error);
+        console.error("Error API Incidencias:", error);
+
         resultado.textContent =
-            "Error al conectar con API Incidencias.";
+            "Error al conectar con API Incidencias a través de Nginx.";
     }
 };
-
 
 iniciarAplicacion();
