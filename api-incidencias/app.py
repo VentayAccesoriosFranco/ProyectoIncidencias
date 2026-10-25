@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -73,16 +73,49 @@ def obtener_incidencias():
     return jsonify(resultado)
 
 
+
 @app.route("/api/incidencias", methods=["POST"])
 @requiere_autenticacion(roles=["usuario", "administrador"])
 def crear_incidencia():
-    datos = request.get_json()
+    datos = request.get_json(silent=True)
+
+    if not isinstance(datos, dict):
+        return jsonify({
+            "error": "Debes enviar los datos en formato JSON"
+        }), 400
+
+    campos_obligatorios = ["titulo", "descripcion", "categoria"]
+
+    for campo in campos_obligatorios:
+        if not isinstance(datos.get(campo), str) or not datos[campo].strip():
+            return jsonify({
+                "error": f"El campo {campo} es obligatorio"
+            }), 400
+
+    usuario_token = g.usuario_autenticado
+    keycloak_id = usuario_token["sub"]
+
+    from sqlalchemy import text
+
+    usuario = db.session.execute(
+        text("""
+            SELECT id
+            FROM usuarios
+            WHERE keycloak_id = :keycloak_id
+        """),
+        {"keycloak_id": keycloak_id}
+    ).mappings().first()
+
+    if usuario is None:
+        return jsonify({
+            "error": "Tu perfil no está registrado en PostgreSQL. Inicia sesión nuevamente."
+        }), 404
 
     incidencia = Incidencia(
-        usuario_id=datos["usuario_id"],
-        titulo=datos["titulo"],
-        descripcion=datos["descripcion"],
-        categoria=datos["categoria"],
+        usuario_id=usuario["id"],
+        titulo=datos["titulo"].strip(),
+        descripcion=datos["descripcion"].strip(),
+        categoria=datos["categoria"].strip(),
         estado="Pendiente",
         prioridad="Media",
         latitud=datos.get("latitud"),
@@ -94,8 +127,10 @@ def crear_incidencia():
 
     return jsonify({
         "mensaje": "Incidencia creada correctamente",
-        "id": incidencia.id
+        "id": incidencia.id,
+        "usuario_id": incidencia.usuario_id
     }), 201
+
 
 @app.route("/api/incidencias/<int:id>", methods=["PATCH"])
 @requiere_autenticacion(roles=["administrador"])
