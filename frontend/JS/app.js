@@ -481,19 +481,19 @@ if (formularioIncidencia) {
 
             if (respuesta.status === 201) {
                 resultado.textContent =
-                    "¡Incidencia registrada correctamente!\n" +
-                    "ID de incidencia: " + datos.id + "\n" +
-                    "ID del usuario: " + datos.usuario_id;
+                "¡Incidencia registrada correctamente!\n" +
+                "ID de incidencia: " + datos.id + "\n" +
+                "ID del usuario: " + datos.usuario_id + "\n" +
+                "Prioridad asignada: " + datos.prioridad + "\n" +
+                "Método de clasificación: " + datos.metodo_clasificacion;
+            formularioIncidencia.reset();
+            await cargarTablaIncidencias();
 
-                formularioIncidencia.reset();
-                
-                await cargarTablaIncidencias();
-
-            } else {
-                resultado.textContent =
-                    "HTTP " + respuesta.status + "\n" +
-                    (datos.error || JSON.stringify(datos));
-            }
+        } else {
+            resultado.textContent =
+            "HTTP " + respuesta.status + "\n" +
+            (datos.error || JSON.stringify(datos));
+        }
 
         } catch (error) {
             console.error("Error al registrar incidencia:", error);

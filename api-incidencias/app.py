@@ -80,12 +80,6 @@ def obtener_incidencias():
 def crear_incidencia():
     datos = request.get_json(silent=True)
 
-    clasificacion = clasificar_prioridad(
-    datos["titulo"],
-    datos["descripcion"]
-    )
-    prioridad_automatica = clasificacion["prioridad"]
-
     if not isinstance(datos, dict):
         return jsonify({
             "error": "Debes enviar los datos en formato JSON"
@@ -98,6 +92,12 @@ def crear_incidencia():
             return jsonify({
                 "error": f"El campo {campo} es obligatorio"
             }), 400
+
+    clasificacion = clasificar_prioridad(
+        datos["titulo"],
+        datos["descripcion"]
+    )
+    prioridad_automatica = clasificacion["prioridad"]
 
     usuario_token = g.usuario_autenticado
     keycloak_id = usuario_token["sub"]
