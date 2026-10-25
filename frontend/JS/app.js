@@ -254,7 +254,7 @@ window.probarActualizarIncidencia = async function () {
 };
 
 // PASO 41: MOSTRAR INCIDENCIAS EN UNA TABLA
-
+let incidenciasGuardadas = [];
 async function cargarTablaIncidencias() {
 
     const cuerpo = document.getElementById("cuerpoTablaIncidencias");
@@ -272,7 +272,6 @@ async function cargarTablaIncidencias() {
     }
 
     try {
-
         mensaje.textContent = "Cargando incidencias...";
 
         await keycloak.updateToken(30);
@@ -291,46 +290,11 @@ async function cargarTablaIncidencias() {
             throw new Error("HTTP " + respuesta.status);
         }
 
-        const incidencias = await respuesta.json();
+        incidenciasGuardadas = await respuesta.json();
 
-        cuerpo.innerHTML = "";
-
-        if (incidencias.length === 0) {
-
-            const fila = cuerpo.insertRow();
-            const celda = fila.insertCell();
-
-            celda.colSpan = 5;
-            celda.textContent = "No hay incidencias registradas.";
-
-            mensaje.textContent = "";
-            return;
-        }
-
-        incidencias.forEach(incidencia => {
-
-            const fila = cuerpo.insertRow();
-
-            const valores = [
-                incidencia.id,
-                incidencia.titulo,
-                incidencia.categoria,
-                incidencia.estado,
-                incidencia.prioridad
-            ];
-
-            valores.forEach(valor => {
-                const celda = fila.insertCell();
-                celda.textContent = valor ?? "";
-            });
-
-        });
-
-        mensaje.textContent =
-            "Total de incidencias: " + incidencias.length;
+        mostrarIncidenciasFiltradas();
 
     } catch (error) {
-
         console.error("Error al cargar incidencias:", error);
 
         mensaje.textContent =
@@ -338,8 +302,82 @@ async function cargarTablaIncidencias() {
     }
 }
 
+function mostrarIncidenciasFiltradas() {
+
+    const cuerpo = document.getElementById("cuerpoTablaIncidencias");
+    const mensaje = document.getElementById("mensajeListadoIncidencias");
+
+    if (!cuerpo || !mensaje) {
+        return;
+    }
+
+    const incidencias = filtrarIncidencias();
+
+    cuerpo.innerHTML = "";
+
+    if (incidencias.length === 0) {
+        const fila = cuerpo.insertRow();
+        const celda = fila.insertCell();
+
+        celda.colSpan = 5;
+        celda.textContent = "No hay incidencias que coincidan con los filtros.";
+    }
+
+    incidencias.forEach(incidencia => {
+
+        const fila = cuerpo.insertRow();
+
+        [
+            incidencia.id,
+            incidencia.titulo,
+            incidencia.categoria,
+            incidencia.estado,
+            incidencia.prioridad
+        ].forEach(valor => {
+
+            const celda = fila.insertCell();
+            celda.textContent = valor ?? "";
+
+        });
+    });
+
+    mensaje.textContent =
+        "Incidencias mostradas: " + incidencias.length +
+        " de " + incidenciasGuardadas.length;
+}
+
+
 document.getElementById("btnCargarIncidencias")
     ?.addEventListener("click", cargarTablaIncidencias);
+
+function filtrarIncidencias() {
+    const estado = document.getElementById("filtroEstado")?.value || "";
+    const categoria = document.getElementById("filtroCategoria")?.value || "";
+    const titulo = document.getElementById("filtroTitulo")?.value.toLowerCase().trim() || "";
+
+    return incidenciasGuardadas.filter(incidencia => {
+
+        const coincideEstado =
+            !estado || incidencia.estado === estado;
+
+        const coincideCategoria =
+            !categoria || incidencia.categoria === categoria;
+
+        const coincideTitulo =
+            !titulo || incidencia.titulo.toLowerCase().includes(titulo);
+
+        return coincideEstado && coincideCategoria && coincideTitulo;
+    });
+}
+
+document.getElementById("filtroEstado")
+    .addEventListener("change", mostrarIncidenciasFiltradas);
+
+document.getElementById("filtroCategoria")
+    .addEventListener("change", mostrarIncidenciasFiltradas);
+
+document.getElementById("filtroTitulo")
+    ?.addEventListener("input", mostrarIncidenciasFiltradas);
 
 iniciarAplicacion();
 
