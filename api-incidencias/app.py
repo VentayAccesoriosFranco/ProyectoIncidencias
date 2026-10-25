@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from dotenv import load_dotenv
 from seguridad import requiere_autenticacion
+from clasificador_ia import clasificar_prioridad
 import os
 
 load_dotenv()
@@ -79,6 +80,12 @@ def obtener_incidencias():
 def crear_incidencia():
     datos = request.get_json(silent=True)
 
+    clasificacion = clasificar_prioridad(
+    datos["titulo"],
+    datos["descripcion"]
+    )
+    prioridad_automatica = clasificacion["prioridad"]
+
     if not isinstance(datos, dict):
         return jsonify({
             "error": "Debes enviar los datos en formato JSON"
@@ -117,7 +124,7 @@ def crear_incidencia():
         descripcion=datos["descripcion"].strip(),
         categoria=datos["categoria"].strip(),
         estado="Pendiente",
-        prioridad="Media",
+        prioridad=prioridad_automatica,
         latitud=datos.get("latitud"),
         longitud=datos.get("longitud")
     )
@@ -128,7 +135,9 @@ def crear_incidencia():
     return jsonify({
         "mensaje": "Incidencia creada correctamente",
         "id": incidencia.id,
-        "usuario_id": incidencia.usuario_id
+        "usuario_id": incidencia.usuario_id,
+        "prioridad": incidencia.prioridad,
+        "metodo_clasificacion": clasificacion["metodo"]
     }), 201
 
 

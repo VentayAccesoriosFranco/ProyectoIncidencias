@@ -327,18 +327,53 @@ function mostrarIncidenciasFiltradas() {
 
         const fila = cuerpo.insertRow();
 
-        [
+        const valores = [
             incidencia.id,
             incidencia.titulo,
             incidencia.categoria,
             incidencia.estado,
             incidencia.prioridad
-        ].forEach(valor => {
+        ];
+
+        valores.forEach((valor, indice) => {
 
             const celda = fila.insertCell();
-            celda.textContent = valor ?? "";
+
+            if (indice === 3 || indice === 4) {
+
+                const etiqueta = document.createElement("span");
+                etiqueta.classList.add("etiqueta");
+                etiqueta.textContent = valor ?? "";
+
+                if (indice === 3) {
+
+                    if (valor === "Pendiente") {
+                        etiqueta.classList.add("estado-pendiente");
+                    } else if (valor === "En proceso") {
+                        etiqueta.classList.add("estado-proceso");
+                    } else if (valor === "Resuelto") {
+                        etiqueta.classList.add("estado-resuelto");
+                    }
+
+                } else {
+
+                    if (valor === "Alta") {
+                        etiqueta.classList.add("prioridad-alta");
+                    } else if (valor === "Media") {
+                        etiqueta.classList.add("prioridad-media");
+                    } else if (valor === "Baja") {
+                        etiqueta.classList.add("prioridad-baja");
+                    }
+                }
+
+                celda.appendChild(etiqueta);
+
+            } else {
+                celda.textContent = valor ?? "";
+            }
 
         });
+
     });
 
     mensaje.textContent =

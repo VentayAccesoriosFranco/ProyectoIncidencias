@@ -160,3 +160,36 @@ button {
 #mensajeListadoIncidencias {
     margin-top: 15px;
 }
+
+
+/* PASO 45: Colores de estados y prioridades */
+
+.etiqueta {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.estado-pendiente,
+.prioridad-media {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.estado-proceso {
+    background-color: #cfe2ff;
+    color: #084298;
+}
+
+.estado-resuelto,
+.prioridad-baja {
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.prioridad-alta {
+    background-color: #f8d7da;
+    color: #842029;
+}
