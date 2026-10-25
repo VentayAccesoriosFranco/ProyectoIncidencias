@@ -60,3 +60,103 @@ button {
         margin: 5px 0;
     }
 }
+
+
+#seccionCrearIncidencia {
+    margin-top: 30px;
+    padding: 25px;
+    background-color: #ffffff;
+    border-radius: 10px;
+}
+
+#formIncidencia {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+#formIncidencia label {
+    font-weight: bold;
+    color: #333333;
+}
+
+#formIncidencia input,
+#formIncidencia textarea,
+#formIncidencia select {
+    padding: 12px;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: Arial, sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#formIncidencia button {
+    padding: 13px;
+    background-color: #215580;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+#formIncidencia button:hover {
+    background-color: #163c5c;
+}
+
+#formIncidencia button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#resultadoCrearIncidencia {
+    margin-top: 15px;
+    padding: 12px;
+    white-space: pre-line;
+}
+
+
+/* PASO 41: TABLA DE INCIDENCIAS */
+
+#seccionListadoIncidencias {
+    margin-top: 30px;
+}
+
+.tabla-contenedor {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+#tablaIncidencias {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#tablaIncidencias th,
+#tablaIncidencias td {
+    padding: 12px;
+    border: 1px solid #dddddd;
+    text-align: left;
+}
+
+#tablaIncidencias th {
+    background-color: #215580;
+    color: white;
+}
+
+#tablaIncidencias tbody tr:nth-child(even) {
+    background-color: #f4f6f8;
+}
+
+#btnCargarIncidencias {
+    background-color: #215580;
+    color: white;
+}
+
+#mensajeListadoIncidencias {
+    margin-top: 15px;
+}

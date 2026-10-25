@@ -11,6 +11,41 @@ const API_URL = "http://localhost:8081";
 window.iniciarSesion = iniciarSesion;
 window.cerrarSesion = cerrarSesion;
 
+// Sincroniza el usuario autenticado con PostgreSQL.
+async function sincronizarPerfil() {
+    const keycloak = obtenerKeycloak();
+
+    if (!keycloak.authenticated) {
+        return;
+    }
+
+    await keycloak.updateToken(30);
+
+    const respuesta = await fetch(
+        `${API_URL}/api/usuarios/mi-perfil`,
+        {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + keycloak.token,
+                "Content-Type": "application/json"
+            }
+        }
+    );
+
+    const datos = await respuesta.json();
+
+    if (!respuesta.ok) {
+        throw new Error(
+            `HTTP ${respuesta.status}: ` +
+            (datos.error || JSON.stringify(datos))
+        );
+    }
+
+    console.log("Perfil sincronizado:", datos);
+
+    return datos;
+}
+
 async function iniciarAplicacion() {
     const estado = document.getElementById("estadoSesion");
     const informacion = document.getElementById("informacionUsuario");
@@ -33,6 +68,26 @@ async function iniciarAplicacion() {
                 " | Nombre: " + (usuario.name || "") +
                 " | Roles: " +
                 (usuario.realm_access?.roles || []).join(", ");
+                await cargarTablaIncidencias();
+
+            // Nuevo: registrar o actualizar el perfil en PostgreSQL.
+            try {
+                const perfil = await sincronizarPerfil();
+
+                console.log(
+                    "Usuario registrado en PostgreSQL:",
+                    perfil.usuario
+                );
+
+            } catch (error) {
+                console.error(
+                    "No se pudo sincronizar el perfil:",
+                    error
+                );
+
+                estado.textContent =
+                    "Sesión iniciada, pero no se pudo sincronizar el perfil";
+            }
 
         } else {
             estado.textContent = "No has iniciado sesión";
@@ -198,4 +253,185 @@ window.probarActualizarIncidencia = async function () {
     }
 };
 
+// PASO 41: MOSTRAR INCIDENCIAS EN UNA TABLA
+
+async function cargarTablaIncidencias() {
+
+    const cuerpo = document.getElementById("cuerpoTablaIncidencias");
+    const mensaje = document.getElementById("mensajeListadoIncidencias");
+    const keycloak = obtenerKeycloak();
+
+    if (!cuerpo || !mensaje) {
+        return;
+    }
+
+    if (!keycloak.authenticated) {
+        cuerpo.innerHTML = "";
+        mensaje.textContent = "Debes iniciar sesión para consultar las incidencias.";
+        return;
+    }
+
+    try {
+
+        mensaje.textContent = "Cargando incidencias...";
+
+        await keycloak.updateToken(30);
+
+        const respuesta = await fetch(
+            `${API_URL}/api/incidencias`,
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + keycloak.token
+                }
+            }
+        );
+
+        if (!respuesta.ok) {
+            throw new Error("HTTP " + respuesta.status);
+        }
+
+        const incidencias = await respuesta.json();
+
+        cuerpo.innerHTML = "";
+
+        if (incidencias.length === 0) {
+
+            const fila = cuerpo.insertRow();
+            const celda = fila.insertCell();
+
+            celda.colSpan = 5;
+            celda.textContent = "No hay incidencias registradas.";
+
+            mensaje.textContent = "";
+            return;
+        }
+
+        incidencias.forEach(incidencia => {
+
+            const fila = cuerpo.insertRow();
+
+            const valores = [
+                incidencia.id,
+                incidencia.titulo,
+                incidencia.categoria,
+                incidencia.estado,
+                incidencia.prioridad
+            ];
+
+            valores.forEach(valor => {
+                const celda = fila.insertCell();
+                celda.textContent = valor ?? "";
+            });
+
+        });
+
+        mensaje.textContent =
+            "Total de incidencias: " + incidencias.length;
+
+    } catch (error) {
+
+        console.error("Error al cargar incidencias:", error);
+
+        mensaje.textContent =
+            "No se pudieron cargar las incidencias. Revisa que las APIs estén encendidas.";
+    }
+}
+
+document.getElementById("btnCargarIncidencias")
+    ?.addEventListener("click", cargarTablaIncidencias);
+
 iniciarAplicacion();
+
+
+const formularioIncidencia = document.getElementById("formIncidencia");
+
+if (formularioIncidencia) {
+    formularioIncidencia.addEventListener("submit", async function (evento) {
+        evento.preventDefault();
+
+        const resultado = document.getElementById(
+            "resultadoCrearIncidencia"
+        );
+
+        const boton = document.getElementById("btnCrearIncidencia");
+        const keycloak = obtenerKeycloak();
+
+        if (!keycloak.authenticated) {
+            resultado.textContent =
+                "Debes iniciar sesión para registrar una incidencia.";
+            return;
+        }
+
+        const titulo = document.getElementById(
+            "tituloIncidencia"
+        ).value.trim();
+
+        const descripcion = document.getElementById(
+            "descripcionIncidencia"
+        ).value.trim();
+
+        const categoria = document.getElementById(
+            "categoriaIncidencia"
+        ).value;
+
+        if (!titulo || !descripcion || !categoria) {
+            resultado.textContent =
+                "Debes completar todos los campos.";
+            return;
+        }
+
+        boton.disabled = true;
+        resultado.textContent = "Registrando incidencia...";
+
+        try {
+            await keycloak.updateToken(30);
+
+            const respuesta = await fetch(
+                `${API_URL}/api/incidencias`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer " + keycloak.token,
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({
+                        titulo: titulo,
+                        descripcion: descripcion,
+                        categoria: categoria
+                    })
+                }
+            );
+
+            const datos = await respuesta.json();
+
+            if (respuesta.status === 201) {
+                resultado.textContent =
+                    "¡Incidencia registrada correctamente!\n" +
+                    "ID de incidencia: " + datos.id + "\n" +
+                    "ID del usuario: " + datos.usuario_id;
+
+                formularioIncidencia.reset();
+                
+                await cargarTablaIncidencias();
+
+            } else {
+                resultado.textContent =
+                    "HTTP " + respuesta.status + "\n" +
+                    (datos.error || JSON.stringify(datos));
+            }
+
+        } catch (error) {
+            console.error("Error al registrar incidencia:", error);
+
+            resultado.textContent =
+                "No fue posible registrar la incidencia. " +
+                "Verifica que Nginx y Flask estén encendidos.";
+
+        } finally {
+            boton.disabled = false;
+        }
+    });
+}
+

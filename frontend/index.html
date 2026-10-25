@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reportes e Incidencias</title>
-    <link rel="stylesheet" href="CSS/estilos.css">
+    <link rel="stylesheet" href="CSS/estilos.css?v=3">
 </head>
 <body>
 
@@ -41,6 +41,100 @@
 
             <div id="resultado"></div>
         </section>
+                                    
+        <section id="seccionCrearIncidencia">
+            <h2>Registrar nueva incidencia</h2>
+
+            <p>
+                Reporta problemas de infraestructura de tu comunidad.
+            </p>
+
+            <form id="formIncidencia">
+
+                <label for="tituloIncidencia">Título:</label>
+                <input
+                    type="text"
+                    id="tituloIncidencia"
+                    placeholder="Ejemplo: Luminaria dañada"
+                    maxlength="150"
+                    required
+                >
+
+                <label for="descripcionIncidencia">Descripción:</label>
+                <textarea
+                    id="descripcionIncidencia"
+                     placeholder="Describe el problema encontrado"
+                    rows="4"
+                    required
+                ></textarea>
+
+                <label for="categoriaIncidencia">Categoría:</label>
+                <select id="categoriaIncidencia" required>
+                    <option value="">Selecciona una categoría</option>
+                    <option value="Alumbrado público">
+                        Alumbrado público
+                    </option>
+                    <option value="Fuga de agua">
+                        Fuga de agua
+                    </option>
+                    <option value="Calles dañadas">
+                        Calles dañadas
+                    </option>
+                    <option value="Infraestructura">
+                        Infraestructura
+                    </option>
+                    <option value="Otros">
+                        Otros
+                    </option>
+                </select>
+
+                <button type="submit" id="btnCrearIncidencia">
+                    Registrar incidencia
+                </button>
+
+            </form>
+
+            <div id="resultadoCrearIncidencia"></div>
+        </section>
+
+        <section id="seccionListadoIncidencias">
+
+            <h2>Incidencias registradas</h2>
+
+            <p>Consulta los reportes registrados en el sistema.</p>
+
+            <button type="button" id="btnCargarIncidencias">
+                Actualizar listado
+            </button>
+
+            <div class="tabla-contenedor">
+                <table id="tablaIncidencias">
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th>Prioridad</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="cuerpoTablaIncidencias">
+                        <tr>
+                            <td colspan="5">Inicia sesión para consultar las incidencias.</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+            <p id="mensajeListadoIncidencias"></p>
+
+        </section>
+
+
+        
     </main>
 
     <script type="module" src="JS/app.js"></script>
