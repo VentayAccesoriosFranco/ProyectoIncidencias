@@ -1,12 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportes e Incidencias</title>
-    <link rel="stylesheet" href="CSS/estilos.css?v=45">
+
+    <title>Iniciar sesión | Reportes e Incidencias</title>
+
+    <link rel="stylesheet" href="CSS/estilos.css?v=52">
+    <link rel="stylesheet" href="CSS/paneles.css?v=52">
 </head>
+
 <body>
 
     <header>
@@ -15,157 +18,35 @@
     </header>
 
     <main>
-        <section>
-            <h2>Autenticación con Keycloak</h2>
 
-            <p id="estadoSesion">Comprobando sesión...</p>
+        <section class="seccion-login">
 
-            <button id="btnLogin" onclick="iniciarSesion()">
+            <h2>Bienvenido al sistema</h2>
+
+            <p>
+                Inicia sesión para acceder a las funciones
+                correspondientes a tu cuenta.
+            </p>
+
+            <p id="estadoSesion">
+                Comprobando sesión...
+            </p>
+
+            <button id="btnLogin" type="button" hidden>
                 Iniciar sesión
             </button>
 
-            <button id="btnLogout" onclick="cerrarSesion()" hidden>
+            <button id="btnLogout" type="button" hidden>
                 Cerrar sesión
             </button>
 
-            <h3>Información del usuario</h3>
-            <div id="informacionUsuario"></div>
-
-            <hr>
-
-            <h2>Estado del sistema</h2>
-
-            <button onclick="probarUsuarios()">Probar API Usuarios</button>
-            <button onclick="probarIncidencias()">Probar API Incidencias</button>
-            <button onclick="probarActualizarIncidencia()">Actualizar incidencia de prueba</button>
-
-            <div id="resultado"></div>
-        </section>
-                                    
-        <section id="seccionCrearIncidencia">
-            <h2>Registrar nueva incidencia</h2>
-
-            <p>
-                Reporta problemas de infraestructura de tu comunidad.
-            </p>
-
-            <form id="formIncidencia">
-
-                <label for="tituloIncidencia">Título:</label>
-                <input
-                    type="text"
-                    id="tituloIncidencia"
-                    placeholder="Ejemplo: Luminaria dañada"
-                    maxlength="150"
-                    required
-                >
-
-                <label for="descripcionIncidencia">Descripción:</label>
-                <textarea
-                    id="descripcionIncidencia"
-                     placeholder="Describe el problema encontrado"
-                    rows="4"
-                    required
-                ></textarea>
-
-                <label for="categoriaIncidencia">Categoría:</label>
-                <select id="categoriaIncidencia" required>
-                    <option value="">Selecciona una categoría</option>
-                    <option value="Alumbrado público">
-                        Alumbrado público
-                    </option>
-                    <option value="Fuga de agua">
-                        Fuga de agua
-                    </option>
-                    <option value="Calles dañadas">
-                        Calles dañadas
-                    </option>
-                    <option value="Infraestructura">
-                        Infraestructura
-                    </option>
-                    <option value="Otros">
-                        Otros
-                    </option>
-                </select>
-
-                <button type="submit" id="btnCrearIncidencia">
-                    Registrar incidencia
-                </button>
-
-            </form>
-
-            <div id="resultadoCrearIncidencia"></div>
-        </section>
-
-        <section id="seccionListadoIncidencias">
-
-            <h2>Incidencias registradas</h2>
-
-            <p>Consulta los reportes registrados en el sistema.</p>
-
-            <div id="filtrosIncidencias">
-
-                <label for="filtroTitulo">Buscar por título:</label>
-                <input
-                    type="search"
-                    id="filtroTitulo"
-                    placeholder="Buscar incidencia..."
-                >
-
-                <label for="filtroEstado">Estado:</label>
-                <select id="filtroEstado">
-                    <option value="">Todos</option>
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="En proceso">En proceso</option>
-                    <option value="Resuelto">Resuelto</option>
-                </select>
-
-                <label for="filtroCategoria">Categoría:</label>
-                <select id="filtroCategoria">
-                    <option value="">Todas</option>
-                    <option value="Alumbrado público">Alumbrado público</option>
-                    <option value="Fuga de agua">Fuga de agua</option>
-                    <option value="Calles dañadas">Calles dañadas</option>
-                    <option value="Infraestructura">Infraestructura</option>
-                    <option value="Otros">Otros</option>
-                </select>
-
-            </div>
-
-            <button type="button" id="btnCargarIncidencias">
-                Actualizar listado
-            </button>
-
-            <div class="tabla-contenedor">
-                <table id="tablaIncidencias">
-
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Categoría</th>
-                            <th>Estado</th>
-                            <th>Prioridad</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="cuerpoTablaIncidencias">
-                        <tr>
-                            <td colspan="5">Inicia sesión para consultar las incidencias.</td>
-                        </tr>
-                    </tbody>
-
-                </table>
-            </div>
-
-            <p id="mensajeListadoIncidencias"></p>
+            <div id="mensajeAcceso"></div>
 
         </section>
 
-
-        
     </main>
 
-    <script type="module" src="JS/app.js"></script>
+    <script type="module" src="JS/login.js"></script>
+
 </body>
 </html>

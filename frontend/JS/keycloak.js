@@ -14,7 +14,7 @@ export async function configurarKeycloak() {
         onLoad: "check-sso",
         pkceMethod: "S256",
         checkLoginIframe: false,
-        redirectUri: URL_FRONTEND
+        redirectUri: window.location.href.split("#")[0]
     });
 }
 
@@ -32,4 +32,24 @@ export function cerrarSesion() {
 
 export function obtenerKeycloak() {
     return keycloak;
+}
+
+// PASO 52.3: Identificar el rol del usuario autenticado
+export function obtenerRolUsuario() {
+
+    if (!keycloak.authenticated || !keycloak.tokenParsed) {
+        return null;
+    }
+
+    const roles = keycloak.tokenParsed.realm_access?.roles || [];
+
+    if (roles.includes("administrador")) {
+        return "administrador";
+    }
+
+    if (roles.includes("usuario")) {
+        return "usuario";
+    }
+
+    return null;
 }

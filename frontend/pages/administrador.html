@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrador | Reportes e Incidencias</title>
+    <link rel="stylesheet" href="../CSS/paneles.css">
+</head>
+<body>
+
+    <header>
+        <h1>Reportes e Incidencias</h1>
+        <p>Panel de administración</p>
+
+        <button type="button" id="btnCerrarSesion" hidden>
+            Cerrar sesión
+        </button>
+    </header>
+
+    <main>
+        <h2>Bienvenido al panel administrativo</h2>
+        <p>Gestiona las incidencias reportadas por los ciudadanos.</p>
+
+        <nav>
+            <a href="#solicitudes">Solicitudes</a>
+            <a href="#personal">Personal asignado</a>
+            <a href="#historial">Historial</a>
+        </nav>
+
+        <section id="solicitudes">
+            <h3>Gestión de incidencias</h3>
+            <p>Aquí mostraremos todos los reportes para asignar prioridades y actualizar estados.</p>
+        </section>
+
+        <section id="personal">
+            <h3>Personal disponible</h3>
+            <p>Aquí administraremos el listado de trabajadores o cuadrillas.</p>
+        </section>
+
+        <section id="historial">
+            <h3>Historial de atención</h3>
+            <p>Aquí mostraremos los cambios realizados en cada incidencia.</p>
+        </section>
+    </main>
+
+    <script type="module" src="../JS/administrador.js"></script>
+
+</body>
+</html>
