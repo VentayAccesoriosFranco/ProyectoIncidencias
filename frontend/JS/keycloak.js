@@ -24,6 +24,13 @@ export function iniciarSesion() {
     });
 }
 
+// Registro de ciudadanos (requiere "User registration" activo en el realm).
+export function registrarCuenta() {
+    return keycloak.register({
+        redirectUri: URL_FRONTEND
+    });
+}
+
 export function cerrarSesion() {
     return keycloak.logout({
         redirectUri: URL_FRONTEND
@@ -34,7 +41,7 @@ export function obtenerKeycloak() {
     return keycloak;
 }
 
-// PASO 52.3: Identificar el rol del usuario autenticado
+// Identificar el rol del usuario autenticado
 export function obtenerRolUsuario() {
 
     if (!keycloak.authenticated || !keycloak.tokenParsed) {

@@ -5,3 +5,5 @@ __pycache__/
 *.pyc
 node_modules/
 backups/
+api-incidencias/uploads/
+_respaldo_paso55/

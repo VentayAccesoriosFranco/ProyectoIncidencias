@@ -1,50 +1,446 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Panel Administrador | Reportes e Incidencias</title>
-    <link rel="stylesheet" href="../CSS/paneles.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="../CSS/app.css?v=61">
 </head>
 <body>
 
-    <header>
-        <h1>Reportes e Incidencias</h1>
-        <p>Panel de administración</p>
+    <div id="cargaPagina" class="carga-pagina">
+        <div><span class="cargador"></span> Verificando sesión...</div>
+    </div>
 
-        <button type="button" id="btnCerrarSesion" hidden>
-            Cerrar sesión
-        </button>
-    </header>
+    <div id="panelAdministrador" class="panel" hidden>
 
-    <main>
-        <h2>Bienvenido al panel administrativo</h2>
-        <p>Gestiona las incidencias reportadas por los ciudadanos.</p>
+        <!-- Menú lateral -->
+        <aside class="barra-lateral">
 
-        <nav>
-            <a href="#solicitudes">Solicitudes</a>
-            <a href="#personal">Personal asignado</a>
-            <a href="#historial">Historial</a>
-        </nav>
+            <div class="logo">
+                <div class="logo-icono" aria-hidden="true">📍</div>
+                <div>
+                    Reportes e Incidencias
+                    <small>Administración municipal</small>
+                </div>
+            </div>
 
-        <section id="solicitudes">
-            <h3>Gestión de incidencias</h3>
-            <p>Aquí mostraremos todos los reportes para asignar prioridades y actualizar estados.</p>
-        </section>
+            <nav class="menu" aria-label="Menú principal">
+                <span class="menu-titulo">Gestión</span>
+                <a href="#general" data-vista="general"><span class="icono">📊</span> Panel general</a>
+                <a href="#incidencias" data-vista="incidencias">
+                    <span class="icono">📋</span> Incidencias
+                    <span class="contador" id="contadorPendientes" hidden>0</span>
+                </a>
+                <a href="#personal" data-vista="personal"><span class="icono">👷</span> Personal</a>
+                <a href="#historial" data-vista="historial"><span class="icono">🕘</span> Historial</a>
+            </nav>
 
-        <section id="personal">
-            <h3>Personal disponible</h3>
-            <p>Aquí administraremos el listado de trabajadores o cuadrillas.</p>
-        </section>
+            <div class="usuario-lateral">
+                <div class="avatar" id="avatarUsuario">?</div>
+                <div class="datos">
+                    <strong id="nombreUsuario">Administrador</strong>
+                    <span>Administrador</span>
+                </div>
+                <button type="button" class="boton-salir" id="btnCerrarSesion">Salir</button>
+            </div>
 
-        <section id="historial">
-            <h3>Historial de atención</h3>
-            <p>Aquí mostraremos los cambios realizados en cada incidencia.</p>
-        </section>
-    </main>
+        </aside>
 
-    <script type="module" src="../JS/administrador.js"></script>
+        <div>
+
+            <div class="barra-movil">
+                <button type="button" id="btnMenu" aria-label="Abrir menú">☰</button>
+                <strong>Administración</strong>
+                <span></span>
+            </div>
+
+            <main class="contenido">
+
+                <!-- ============ PANEL GENERAL ============ -->
+                <section id="vista-general">
+
+                    <div class="encabezado-vista">
+                        <div>
+                            <h1>Panel general</h1>
+                            <p>Resumen general de las incidencias reportadas por la ciudadanía.</p>
+                        </div>
+                        <button type="button" class="boton boton-secundario" data-actualizar>↻ Actualizar</button>
+                    </div>
+
+                    <div class="indicadores">
+                        <div class="indicador">
+                            <span>Total de incidencias</span>
+                            <strong id="indTotal">0</strong>
+                        </div>
+                        <div class="indicador pendiente">
+                            <span>Pendientes</span>
+                            <strong id="indPendientes">0</strong>
+                        </div>
+                        <div class="indicador proceso">
+                            <span>En proceso</span>
+                            <strong id="indProceso">0</strong>
+                        </div>
+                        <div class="indicador resuelto">
+                            <span>Resueltas</span>
+                            <strong id="indResueltas">0</strong>
+                        </div>
+                        <div class="indicador alerta">
+                            <span>Alta prioridad sin resolver</span>
+                            <strong id="indAlta">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="cuadricula-2">
+
+                        <div class="tarjeta">
+                            <div class="tarjeta-titulo">
+                                <h2>Mapa de incidencias activas</h2>
+                            </div>
+                            <div id="mapaDashboard" class="mapa"></div>
+                            <div class="leyenda-mapa">
+                                <span style="--c:#c2410c">Alta</span>
+                                <span style="--c:#b7791f">Media</span>
+                                <span style="--c:#2f855a">Baja</span>
+                            </div>
+                        </div>
+
+                        <div class="pila">
+                            <div class="tarjeta">
+                                <div class="tarjeta-titulo">
+                                    <h2>Requieren atención</h2>
+                                    <a href="#incidencias" class="boton boton-texto">Ver todas →</a>
+                                </div>
+                                <ul id="listaAtencion" class="lista-atencion"></ul>
+                            </div>
+
+                            <div class="tarjeta">
+                                <div class="tarjeta-titulo">
+                                    <h2>Incidencias por categoría</h2>
+                                </div>
+                                <div id="barrasCategoria" class="barras"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- ============ INCIDENCIAS ============ -->
+                <section id="vista-incidencias" hidden>
+
+                    <div class="encabezado-vista">
+                        <div>
+                            <h1>Incidencias</h1>
+                            <p>Prioriza, asigna personal y actualiza el avance de cada reporte.</p>
+                        </div>
+                        <button type="button" class="boton boton-secundario" data-actualizar>↻ Actualizar</button>
+                    </div>
+
+                    <div class="filtros">
+                        <div class="campo">
+                            <label for="filtroTitulo">Buscar</label>
+                            <input type="search" id="filtroTitulo" placeholder="Título, ciudadano o número...">
+                        </div>
+                        <div class="campo">
+                            <label for="filtroEstado">Estado</label>
+                            <select id="filtroEstado">
+                                <option value="">Todos</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En proceso">En proceso</option>
+                                <option value="Resuelto">Resuelto</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="filtroPrioridad">Prioridad</label>
+                            <select id="filtroPrioridad">
+                                <option value="">Todas</option>
+                                <option value="Alta">Alta</option>
+                                <option value="Media">Media</option>
+                                <option value="Baja">Baja</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="filtroCategoria">Categoría</label>
+                            <select id="filtroCategoria">
+                                <option value="">Todas</option>
+                                <option value="Alumbrado público">Alumbrado público</option>
+                                <option value="Fuga de agua">Fuga de agua</option>
+                                <option value="Calles dañadas">Calles dañadas</option>
+                                <option value="Infraestructura">Infraestructura</option>
+                                <option value="Incendios">Incendios</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="ordenIncidencias">Ordenar por</label>
+                            <select id="ordenIncidencias">
+                                <option value="prioridad">Prioridad (alta primero)</option>
+                                <option value="recientes">Más recientes</option>
+                                <option value="antiguas">Más antiguas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="tabla-contenedor">
+                        <table class="tabla">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Incidencia</th>
+                                    <th>Ciudadano</th>
+                                    <th>Prioridad</th>
+                                    <th>Estado</th>
+                                    <th>Seguimiento</th>
+                                    <th>Responsable</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaIncidencias">
+                                <tr><td colspan="8" class="vacio">Cargando incidencias...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p id="mensajeListadoIncidencias" class="resumen-tabla"></p>
+
+                </section>
+
+                <!-- ============ PERSONAL ============ -->
+                <section id="vista-personal" hidden>
+
+                    <div class="encabezado-vista">
+                        <div>
+                            <h1>Personal</h1>
+                            <p>Trabajadores y cuadrillas disponibles para atender incidencias.</p>
+                        </div>
+                    </div>
+
+                    <div class="cuadricula-2 cuadricula-personal">
+
+                        <div class="tabla-contenedor">
+                            <table class="tabla">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Especialidad</th>
+                                        <th>Teléfono</th>
+                                        <th>Activas</th>
+                                        <th>Estado</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cuerpoTablaPersonal">
+                                    <tr><td colspan="6" class="vacio">Cargando personal...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="tarjeta">
+                            <div class="tarjeta-titulo">
+                                <h2>Registrar personal</h2>
+                            </div>
+
+                            <form id="formPersonal" class="formulario-personal">
+                                <div class="campo">
+                                    <label for="nombrePersonal">Nombre o cuadrilla *</label>
+                                    <input type="text" id="nombrePersonal" maxlength="120"
+                                           placeholder="Ejemplo: Pedro Gómez - Cuadrilla 3" required>
+                                </div>
+                                <div class="campo">
+                                    <label for="especialidadPersonal">Especialidad *</label>
+                                    <select id="especialidadPersonal" required>
+                                        <option value="Alumbrado público">Alumbrado público</option>
+                                        <option value="Fuga de agua">Fuga de agua</option>
+                                        <option value="Calles dañadas">Calles dañadas</option>
+                                        <option value="Infraestructura">Infraestructura</option>
+                                        <option value="Incendios">Incendios</option>
+                                        <option value="Otros">Otros</option>
+                                    </select>
+                                </div>
+                                <div class="campo">
+                                    <label for="telefonoPersonal">Teléfono</label>
+                                    <input type="tel" id="telefonoPersonal" maxlength="30" placeholder="5555-0000">
+                                </div>
+                                <button type="submit" id="btnGuardarPersonal" class="boton boton-primario">
+                                    Agregar al catálogo
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- ============ HISTORIAL ============ -->
+                <section id="vista-historial" hidden>
+
+                    <div class="encabezado-vista">
+                        <div>
+                            <h1>Historial de cambios</h1>
+                            <p>Trazabilidad de todas las acciones realizadas sobre las incidencias.</p>
+                        </div>
+                        <button type="button" id="btnActualizarHistorial" class="boton boton-secundario">↻ Actualizar</button>
+                    </div>
+
+                    <div class="filtros filtros-1">
+                        <div class="campo">
+                            <label for="filtroHistorial">Buscar en el historial</label>
+                            <input type="search" id="filtroHistorial" placeholder="Acción, usuario, incidencia...">
+                        </div>
+                    </div>
+
+                    <div id="listaHistorial" class="historial-general"></div>
+
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ============ GESTIONAR INCIDENCIA ============ -->
+    <div id="modalGestion" class="modal" hidden>
+        <div class="modal-caja" role="dialog" aria-modal="true" aria-labelledby="gestionTitulo">
+
+            <div class="modal-cabecera">
+                <div>
+                    <h2 id="gestionTitulo">Incidencia</h2>
+                    <div class="reporte-meta" id="gestionMeta"></div>
+                </div>
+                <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">×</button>
+            </div>
+
+            <div class="modal-cuerpo">
+
+                <div class="tarjeta">
+                    <div class="tarjeta-titulo">
+                        <h3>Seguimiento visible para el ciudadano</h3>
+                        <div id="gestionEtiquetas" class="reporte-etiquetas"></div>
+                    </div>
+                    <div id="gestionProgreso"></div>
+                </div>
+
+                <div class="modal-columnas">
+
+                    <!-- Información -->
+                    <div class="pila">
+
+                        <div class="tarjeta">
+                            <h3 style="font-size:16px;margin-bottom:10px">Descripción del ciudadano</h3>
+                            <p id="gestionDescripcion" class="descripcion"></p>
+                            <hr style="border:none;border-top:1px solid var(--borde);margin:18px 0">
+                            <dl class="datos-lista" id="gestionDatos"></dl>
+                        </div>
+
+                        <div class="caja-ia">
+                            <div class="caja-ia-titulo">
+                                <span>✨ Resumen con inteligencia artificial</span>
+                                <button type="button" id="btnGenerarResumen" class="boton boton-secundario boton-pequeno">
+                                    Generar resumen
+                                </button>
+                            </div>
+                            <p id="gestionResumen" class="texto-suave">Aún no se ha generado un resumen.</p>
+                        </div>
+
+                        <div class="tarjeta">
+                            <h3 style="font-size:16px;margin-bottom:12px">Fotografía</h3>
+                            <div id="gestionFoto" class="contenedor-foto"></div>
+                        </div>
+
+                        <div class="tarjeta">
+                            <h3 style="font-size:16px;margin-bottom:12px">Ubicación</h3>
+                            <div id="gestionMapa" class="mapa mapa-pequeno"></div>
+                        </div>
+
+                    </div>
+
+                    <!-- Gestión -->
+                    <div class="pila">
+
+                        <div class="tarjeta">
+                            <div class="tarjeta-titulo">
+                                <h3>Gestionar incidencia</h3>
+                            </div>
+
+                            <form id="formGestion" class="formulario-gestion">
+
+                                <div class="fila-campos">
+                                    <div class="campo">
+                                        <label for="gestionPrioridad">Prioridad</label>
+                                        <select id="gestionPrioridad">
+                                            <option value="Alta">Alta</option>
+                                            <option value="Media">Media</option>
+                                            <option value="Baja">Baja</option>
+                                        </select>
+                                    </div>
+                                    <div class="campo">
+                                        <label for="gestionCategoria">Categoría</label>
+                                        <select id="gestionCategoria">
+                                            <option value="Alumbrado público">Alumbrado público</option>
+                                            <option value="Fuga de agua">Fuga de agua</option>
+                                            <option value="Calles dañadas">Calles dañadas</option>
+                                            <option value="Infraestructura">Infraestructura</option>
+                                            <option value="Incendios">Incendios</option>
+                                            <option value="Otros">Otros</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="campo">
+                                    <label for="gestionResponsable">Responsable asignado</label>
+                                    <select id="gestionResponsable"></select>
+                                    <span class="ayuda" id="ayudaResponsable"></span>
+                                </div>
+
+                                <div class="campo">
+                                    <label for="gestionAvance">Etapa de seguimiento</label>
+                                    <select id="gestionAvance">
+                                        <option value="Reporte recibido">1. Reporte recibido</option>
+                                        <option value="En revisión">2. En revisión</option>
+                                        <option value="Personal asignado">3. Personal asignado</option>
+                                        <option value="Personal en camino">4. Personal en camino</option>
+                                        <option value="Trabajo en proceso">5. Trabajo en proceso</option>
+                                        <option value="Resuelto">6. Resuelto</option>
+                                    </select>
+                                </div>
+
+                                <div class="nota-estado" id="notaEstado"></div>
+
+                                <div class="campo">
+                                    <label for="gestionComentario">Comentario para el historial (opcional)</label>
+                                    <textarea id="gestionComentario" rows="3" maxlength="1000"
+                                              placeholder="Ejemplo: La cuadrilla llegará por la tarde."></textarea>
+                                </div>
+
+                                <p id="errorGestion" class="mensaje-error" hidden></p>
+
+                                <button type="submit" id="btnGuardarGestion" class="boton boton-primario">
+                                    Guardar cambios
+                                </button>
+
+                            </form>
+                        </div>
+
+                        <div class="tarjeta">
+                            <h3 style="font-size:16px;margin-bottom:14px">Historial de la incidencia</h3>
+                            <div id="gestionHistorial"></div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="../JS/administrador.js?v=61"></script>
 
 </body>
 </html>

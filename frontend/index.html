@@ -6,47 +6,116 @@
 
     <title>Iniciar sesión | Reportes e Incidencias</title>
 
-    <link rel="stylesheet" href="CSS/estilos.css?v=52">
-    <link rel="stylesheet" href="CSS/paneles.css?v=52">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="CSS/app.css?v=61">
 </head>
 
 <body>
 
-    <header>
-        <h1>Reportes e Incidencias</h1>
-        <p>Plataforma de reporte de problemas de infraestructura</p>
-    </header>
+    <div class="pantalla-acceso">
 
-    <main>
+        <section class="acceso-marca">
 
-        <section class="seccion-login">
+            <div class="logo">
+                <div class="logo-icono" aria-hidden="true">📍</div>
+                <div>
+                    Reportes e Incidencias
+                    <small>Servicios públicos municipales</small>
+                </div>
+            </div>
 
-            <h2>Bienvenido al sistema</h2>
+            <div>
+                <h1 class="acceso-titulo">
+                    Reporta, da seguimiento y <span>resuelve</span>.
+                </h1>
 
-            <p>
-                Inicia sesión para acceder a las funciones
-                correspondientes a tu cuenta.
-            </p>
+                <p class="acceso-descripcion">
+                    Un canal único entre la ciudadanía y la municipalidad para
+                    atender problemas de alumbrado, agua, calles e infraestructura.
+                </p>
+            </div>
 
-            <p id="estadoSesion">
-                Comprobando sesión...
-            </p>
-
-            <button id="btnLogin" type="button" hidden>
-                Iniciar sesión
-            </button>
-
-            <button id="btnLogout" type="button" hidden>
-                Cerrar sesión
-            </button>
-
-            <div id="mensajeAcceso"></div>
+            <ol class="acceso-pasos">
+                <li>
+                    <span class="numero">1</span>
+                    <div>
+                        <strong>Reporta el problema</strong>
+                        <span>Describe la incidencia, adjunta una foto y marca el lugar en el mapa.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="numero">2</span>
+                    <div>
+                        <strong>La municipalidad lo atiende</strong>
+                        <span>La IA sugiere la prioridad y el personal asigna una cuadrilla.</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="numero">3</span>
+                    <div>
+                        <strong>Sigue el avance</strong>
+                        <span>Consulta en todo momento si tu reporte está en revisión, en camino o resuelto.</span>
+                    </div>
+                </li>
+            </ol>
 
         </section>
 
-    </main>
+        <main class="acceso-formulario">
 
-    <script type="module" src="JS/login.js"></script>
+            <div class="tarjeta-acceso">
+
+                <h2>Bienvenido</h2>
+
+                <p>
+                    Inicia sesión con tu cuenta. El sistema abrirá automáticamente
+                    el panel que corresponde a tu rol.
+                </p>
+
+                <div id="estadoSesion" class="estado-sesion" role="status">
+                    <span class="cargador" aria-hidden="true"></span>
+                    <span id="textoEstadoSesion">Comprobando sesión...</span>
+                </div>
+
+                <div id="accionesAcceso" hidden>
+
+                    <button id="btnLogin" type="button" class="boton boton-oscuro">
+                        Iniciar sesión
+                    </button>
+
+                    <div class="separador">¿Aún no tienes cuenta?</div>
+
+                    <button id="btnRegistro" type="button" class="boton boton-secundario">
+                        Crear cuenta de ciudadano
+                    </button>
+
+                </div>
+
+                <button id="btnLogout" type="button" class="boton boton-secundario" hidden>
+                    Cerrar sesión
+                </button>
+
+                <div class="acceso-roles">
+                    <div class="acceso-rol">
+                        <strong>👤 Ciudadano</strong>
+                        Registra incidencias y consulta su avance.
+                    </div>
+                    <div class="acceso-rol">
+                        <strong>🛠️ Administrador</strong>
+                        Prioriza, asigna personal y actualiza reportes.
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script type="module" src="JS/login.js?v=61"></script>
 
 </body>
 </html>

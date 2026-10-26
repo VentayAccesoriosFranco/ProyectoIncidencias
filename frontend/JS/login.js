@@ -1,17 +1,27 @@
 import {
     configurarKeycloak,
     iniciarSesion,
+    registrarCuenta,
     cerrarSesion,
     obtenerRolUsuario
 } from "./keycloak.js";
 
 const estadoSesion = document.getElementById("estadoSesion");
+const textoEstado = document.getElementById("textoEstadoSesion");
+const acciones = document.getElementById("accionesAcceso");
 const btnLogin = document.getElementById("btnLogin");
+const btnRegistro = document.getElementById("btnRegistro");
 const btnLogout = document.getElementById("btnLogout");
-const mensajeAcceso = document.getElementById("mensajeAcceso");
 
 btnLogin.addEventListener("click", iniciarSesion);
+btnRegistro.addEventListener("click", registrarCuenta);
 btnLogout.addEventListener("click", cerrarSesion);
+
+function mostrarEstado(texto, { cargando = false, error = false } = {}) {
+    textoEstado.textContent = texto;
+    estadoSesion.classList.toggle("error", error);
+    estadoSesion.querySelector(".cargador").hidden = !cargando;
+}
 
 async function iniciarAplicacion() {
 
@@ -20,49 +30,39 @@ async function iniciarAplicacion() {
         const autenticado = await configurarKeycloak();
 
         if (!autenticado) {
-
-            estadoSesion.textContent = "Inicia sesión para continuar.";
-
-            btnLogin.hidden = false;
-            btnLogout.hidden = true;
-
+            estadoSesion.hidden = true;
+            acciones.hidden = false;
             return;
         }
-
-        estadoSesion.textContent = "Sesión iniciada correctamente.";
-
-        btnLogin.hidden = true;
-        btnLogout.hidden = false;
 
         const rol = obtenerRolUsuario();
 
         if (rol === "administrador") {
-
-            window.location.replace(
-                "pages/administrador.html"
-            );
+            mostrarEstado("Abriendo el panel de administración...", { cargando: true });
+            window.location.replace("pages/administrador.html");
 
         } else if (rol === "usuario") {
-
-            window.location.replace(
-                "pages/ciudadano.html"
-            );
+            mostrarEstado("Abriendo tu panel de ciudadano...", { cargando: true });
+            window.location.replace("pages/ciudadano.html");
 
         } else {
-
-            mensajeAcceso.textContent =
-                "Tu cuenta no tiene un rol autorizado para acceder al sistema.";
-
+            mostrarEstado(
+                "Tu cuenta no tiene un rol autorizado para acceder al sistema.",
+                { error: true }
+            );
+            btnLogout.hidden = false;
         }
 
     } catch (error) {
 
         console.error("Error al iniciar sesión:", error);
 
-        estadoSesion.textContent =
-            "No fue posible comprobar la sesión.";
+        mostrarEstado(
+            "No fue posible conectar con Keycloak. Verifica que el servidor esté encendido.",
+            { error: true }
+        );
 
-        btnLogin.hidden = false;
+        acciones.hidden = false;
     }
 }
 

@@ -1,44 +1,325 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Panel Ciudadano | Reportes e Incidencias</title>
-    <link rel="stylesheet" href="../CSS/paneles.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="../CSS/app.css?v=61">
 </head>
 <body>
 
-    <header>
-        <h1>Reportes e Incidencias</h1>
-        <p>Panel del ciudadano</p>
+    <div id="cargaPagina" class="carga-pagina">
+        <div><span class="cargador"></span> Verificando sesión...</div>
+    </div>
 
-        <button type="button" id="btnCerrarSesion" hidden>
-                Cerrar sesión
-        </button>
-    </header>
+    <div id="panelCiudadano" class="panel" hidden>
 
-    <main>
-        <h2>Bienvenido al panel ciudadano</h2>
-        <p>Desde aquí podrás registrar incidencias y consultar su seguimiento.</p>
+        <!-- Menú lateral -->
+        <aside class="barra-lateral">
 
-        <nav>
-            <a href="#nuevaIncidencia">Nueva incidencia</a>
-            <a href="#misReportes">Mis reportes</a>
-        </nav>
+            <div class="logo">
+                <div class="logo-icono" aria-hidden="true">📍</div>
+                <div>
+                    Reportes e Incidencias
+                    <small>Panel ciudadano</small>
+                </div>
+            </div>
 
-        <section id="nuevaIncidencia">
-            <h3>Registrar incidencia</h3>
-            <p>Aquí incorporaremos el formulario que ya tenemos funcionando.</p>
-        </section>
+            <nav class="menu" aria-label="Menú principal">
+                <span class="menu-titulo">Menú</span>
+                <a href="#inicio" data-vista="inicio"><span class="icono">🏠</span> Inicio</a>
+                <a href="#nueva" data-vista="nueva"><span class="icono">➕</span> Nueva incidencia</a>
+                <a href="#reportes" data-vista="reportes">
+                    <span class="icono">📋</span> Mis reportes
+                    <span class="contador" id="contadorReportes" hidden>0</span>
+                </a>
+            </nav>
 
-        <section id="misReportes">
-            <h3>Mis reportes</h3>
-            <p>Aquí mostraremos únicamente tus incidencias y sus estados.</p>
-        </section>
-    </main>
+            <div class="usuario-lateral">
+                <div class="avatar" id="avatarUsuario">?</div>
+                <div class="datos">
+                    <strong id="nombreUsuario">Usuario</strong>
+                    <span>Ciudadano</span>
+                </div>
+                <button type="button" class="boton-salir" id="btnCerrarSesion">Salir</button>
+            </div>
 
-    <script type="module" src="../JS/ciudadano.js"></script>
+        </aside>
+
+        <div>
+
+            <div class="barra-movil">
+                <button type="button" id="btnMenu" aria-label="Abrir menú">☰</button>
+                <strong>Reportes e Incidencias</strong>
+                <span></span>
+            </div>
+
+            <main class="contenido">
+
+                <p id="mensajePerfil" class="mensaje-error" hidden></p>
+
+                <!-- ============ INICIO ============ -->
+                <section id="vista-inicio">
+
+                    <div class="encabezado-vista">
+                        <div>
+                            <h1 id="saludo">Hola</h1>
+                            <p>Este es el resumen de tus reportes.</p>
+                        </div>
+                    </div>
+
+                    <div class="indicadores">
+                        <div class="indicador">
+                            <span>Total de reportes</span>
+                            <strong id="totalReportes">0</strong>
+                        </div>
+                        <div class="indicador pendiente">
+                            <span>Pendientes</span>
+                            <strong id="totalPendientes">0</strong>
+                        </div>
+                        <div class="indicador proceso">
+                            <span>En proceso</span>
+                            <strong id="totalProceso">0</strong>
+                        </div>
+                        <div class="indicador resuelto">
+                            <span>Resueltos</span>
+                            <strong id="totalResueltos">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="banner-accion">
+                        <div>
+                            <h2>¿Encontraste un problema en tu comunidad?</h2>
+                            <p>Repórtalo en menos de un minuto con foto y ubicación.</p>
+                        </div>
+                        <a href="#nueva" class="boton boton-primario">Reportar incidencia</a>
+                    </div>
+
+                    <div class="tarjeta">
+                        <div class="tarjeta-titulo">
+                            <h2>Tu reporte más reciente</h2>
+                            <a href="#reportes" class="boton boton-texto">Ver todos →</a>
+                        </div>
+                        <div id="ultimoReporte"></div>
+                    </div>
+
+                </section>
+
+                <!-- ============ NUEVA INCIDENCIA ============ -->
+                <section id="vista-nueva" hidden>
+
+                    <div class="encabezado-vista">
+                        <div>
+                            <h1>Nueva incidencia</h1>
+                            <p>Describe el problema, agrega una fotografía y marca la ubicación.</p>
+                        </div>
+                    </div>
+
+                    <div id="resultadoRegistro" class="resultado-registro" hidden></div>
+
+                    <form id="formIncidencia" class="formulario-incidencia" novalidate>
+
+                        <div class="tarjeta">
+
+                            <div class="campo">
+                                <label for="tituloIncidencia">Título del problema *</label>
+                                <input type="text" id="tituloIncidencia" maxlength="150"
+                                       placeholder="Ejemplo: Foco del poste quemado frente al parque" required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="descripcionIncidencia">Descripción *</label>
+                                <textarea id="descripcionIncidencia" rows="5" required
+                                          placeholder="¿Qué ocurre? ¿Desde cuándo? ¿Representa algún riesgo?"></textarea>
+                            </div>
+
+                            <div class="campo">
+                                <label for="categoriaIncidencia">Categoría</label>
+                                <select id="categoriaIncidencia">
+                                    <option value="">🤖 Que la IA sugiera la categoría</option>
+                                    <option value="Alumbrado público">Alumbrado público</option>
+                                    <option value="Fuga de agua">Fuga de agua</option>
+                                    <option value="Calles dañadas">Calles dañadas</option>
+                                    <option value="Infraestructura">Infraestructura</option>
+                                    <option value="Incendios">Incendios</option>
+                                    <option value="Otros">Otros</option>
+                                </select>
+                                <div class="sugerencia-ia">
+                                    <button type="button" id="btnSugerirCategoria" class="boton boton-secundario boton-pequeno">
+                                        ✨ Sugerir con IA
+                                    </button>
+                                    <span id="textoSugerencia"></span>
+                                </div>
+                            </div>
+
+                            <div class="campo">
+                                <span class="etiqueta-campo">Fotografía (opcional)</span>
+
+                                <label class="zona-foto" id="zonaFoto">
+                                    <input type="file" id="fotoIncidencia" accept="image/jpeg,image/png,image/webp">
+                                    <div class="icono" aria-hidden="true">📷</div>
+                                    <strong>Haz clic o arrastra una imagen aquí</strong>
+                                    <div class="ayuda">JPG, PNG o WEBP · máximo 5 MB</div>
+                                </label>
+
+                                <div id="vistaPreviaFoto" class="vista-previa" hidden>
+                                    <img id="imagenPrevia" alt="Vista previa de la fotografía">
+                                    <div class="datos">
+                                        <strong id="nombreFoto"></strong>
+                                        <span id="tamanoFoto" class="texto-suave"></span>
+                                    </div>
+                                    <button type="button" id="btnQuitarFoto" class="boton boton-secundario boton-pequeno">Quitar</button>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="tarjeta">
+
+                            <div class="campo">
+                                <span class="etiqueta-campo">Ubicación aproximada</span>
+                                <span class="ayuda">Haz clic en el mapa para marcar dónde está el problema.</span>
+                            </div>
+
+                            <div id="mapaRegistro" class="mapa mapa-grande"></div>
+
+                            <div class="coordenadas">
+                                <span id="textoCoordenadas">Sin ubicación seleccionada</span>
+                                <div>
+                                    <button type="button" id="btnMiUbicacion" class="boton boton-secundario boton-pequeno">📍 Usar mi ubicación</button>
+                                    <button type="button" id="btnLimpiarUbicacion" class="boton boton-texto boton-pequeno" hidden>Quitar</button>
+                                </div>
+                            </div>
+
+                            <p id="errorRegistro" class="mensaje-error" hidden></p>
+
+                            <button type="submit" id="btnCrearIncidencia" class="boton boton-primario">
+                                Enviar reporte
+                            </button>
+
+                            <p class="texto-suave" style="margin:0">
+                                La prioridad se asigna automáticamente con inteligencia artificial
+                                y luego es revisada por el personal de la municipalidad.
+                            </p>
+
+                        </div>
+
+                    </form>
+
+                </section>
+
+                <!-- ============ MIS REPORTES ============ -->
+                <section id="vista-reportes" hidden>
+
+                    <div class="encabezado-vista">
+                        <div>
+                            <h1>Mis reportes</h1>
+                            <p>Consulta el avance de cada incidencia que registraste.</p>
+                        </div>
+                        <button type="button" id="btnActualizar" class="boton boton-secundario">↻ Actualizar</button>
+                    </div>
+
+                    <div class="filtros filtros-3">
+                        <div class="campo">
+                            <label for="filtroTitulo">Buscar</label>
+                            <input type="search" id="filtroTitulo" placeholder="Buscar por título...">
+                        </div>
+                        <div class="campo">
+                            <label for="filtroEstado">Estado</label>
+                            <select id="filtroEstado">
+                                <option value="">Todos</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="En proceso">En proceso</option>
+                                <option value="Resuelto">Resuelto</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label for="filtroCategoria">Categoría</label>
+                            <select id="filtroCategoria">
+                                <option value="">Todas</option>
+                                <option value="Alumbrado público">Alumbrado público</option>
+                                <option value="Fuga de agua">Fuga de agua</option>
+                                <option value="Calles dañadas">Calles dañadas</option>
+                                <option value="Infraestructura">Infraestructura</option>
+                                <option value="Incendios">Incendios</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="listaReportes" class="lista-reportes"></div>
+
+                    <p id="mensajeListado" class="resumen-tabla"></p>
+
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ============ DETALLE DEL REPORTE ============ -->
+    <div id="modalDetalle" class="modal" hidden>
+        <div class="modal-caja" role="dialog" aria-modal="true" aria-labelledby="detalleTitulo">
+
+            <div class="modal-cabecera">
+                <div>
+                    <h2 id="detalleTitulo">Reporte</h2>
+                    <div class="reporte-meta" id="detalleMeta"></div>
+                </div>
+                <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">×</button>
+            </div>
+
+            <div class="modal-cuerpo">
+
+                <div class="tarjeta">
+                    <div class="tarjeta-titulo">
+                        <h3>Seguimiento del reporte</h3>
+                        <div id="detalleEtiquetas" class="reporte-etiquetas"></div>
+                    </div>
+                    <div id="detalleProgreso"></div>
+                </div>
+
+                <div class="modal-columnas">
+
+                    <div class="pila">
+                        <div class="tarjeta">
+                            <h3 style="font-size:16px;margin-bottom:10px">Descripción</h3>
+                            <p id="detalleDescripcion" class="descripcion"></p>
+                            <hr style="border:none;border-top:1px solid var(--borde);margin:18px 0">
+                            <dl class="datos-lista" id="detalleDatos"></dl>
+                        </div>
+
+                        <div class="tarjeta">
+                            <h3 style="font-size:16px;margin-bottom:14px">Historial de atención</h3>
+                            <div id="detalleHistorial"></div>
+                        </div>
+                    </div>
+
+                    <div class="pila">
+                        <div class="tarjeta">
+                            <h3 style="font-size:16px;margin-bottom:12px">Fotografía</h3>
+                            <div id="detalleFoto" class="contenedor-foto"></div>
+                        </div>
+                        <div class="tarjeta">
+                            <h3 style="font-size:16px;margin-bottom:12px">Ubicación</h3>
+                            <div id="detalleMapa" class="mapa mapa-pequeno"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="../JS/ciudadano.js?v=61"></script>
 
 </body>
 </html>
